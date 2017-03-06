@@ -14,7 +14,7 @@ using System.Collections.Generic;
 
 namespace NeuralNetwork
 {
-    public class NeuralNet
+    public class NNExample
     {
         int mNumInputs { get; set; }
         int mNumOutputs { get; set; }
@@ -25,7 +25,7 @@ namespace NeuralNetwork
 
         Random mRandom { get; set; }
 
-        public NeuralNet(Random random)
+        public NNExample(Random random)
         {
             mRandom = random;
         }
@@ -172,59 +172,58 @@ namespace NeuralNetwork
         {
             return (1 / (1 + Math.Exp(-activation / response)));
         }
-    }
-
-    public class Neuron
-    {
-        // the number of inputs into the neuron
-        int mNumInputs;
-        public int NumInputs
+        public class Neuron
         {
-            get
+            // the number of inputs into the neuron
+            int mNumInputs;
+            public int NumInputs
             {
-                return mNumInputs;
+                get
+                {
+                    return mNumInputs;
+                }
+            }
+
+            // the weights for each input
+            List<double> mWeights = new List<double>();
+            public List<double> Weights
+            {
+                get
+                {
+                    return mWeights;
+                }
+            }
+
+            public Neuron(Random random, int numInputs)
+            {
+                mNumInputs = numInputs + 1;
+
+                // we need an additional weight for the bias
+                for (int i = 0; i < numInputs + 1; i++)
+                {
+                    // set up the weights with an additional random value
+                    mWeights.Add((random.NextDouble() * 2) - 1);
+                }
             }
         }
 
-        // the weights for each input
-        List<double> mWeights = new List<double>();
-        public List<double> Weights
+        public class NeuronLayer
         {
-            get
+            // the number of neurons in this layer
+            int mNumNeurons;
+            public int NumNeurons { get { return mNumNeurons; } }
+
+            // the layer of neurons
+            List<Neuron> mNeurons = new List<Neuron>();
+            public List<Neuron> Neurons { get { return mNeurons; } }
+
+            public NeuronLayer(Random random, int numNeurons, int numInputsPerNeuron)
             {
-                return mWeights;
-            }
-        }
-
-        public Neuron(Random random, int numInputs)
-        {
-            mNumInputs = numInputs + 1;
-
-            // we need an additional weight for the bias
-            for (int i = 0; i < numInputs + 1; i++)
-            {
-                // set up the weights with an additional random value
-                mWeights.Add((random.NextDouble() * 2) - 1);
-            }
-        }
-    }
-
-    public class NeuronLayer
-    {
-        // the number of neurons in this layer
-        int mNumNeurons;
-        public int NumNeurons { get { return mNumNeurons; } }
-
-        // the layer of neurons
-        List<Neuron> mNeurons = new List<Neuron>();
-        public List<Neuron> Neurons { get { return mNeurons; } } 
-
-        public NeuronLayer (Random random, int numNeurons, int numInputsPerNeuron)
-        {
-            mNumNeurons = numNeurons;
-            for (int i = 0; i < mNumNeurons; i++)
-            {
-                mNeurons.Add(new Neuron(random, numInputsPerNeuron));
+                mNumNeurons = numNeurons;
+                for (int i = 0; i < mNumNeurons; i++)
+                {
+                    mNeurons.Add(new Neuron(random, numInputsPerNeuron));
+                }
             }
         }
     }
