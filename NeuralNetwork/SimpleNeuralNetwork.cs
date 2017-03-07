@@ -39,8 +39,8 @@ namespace NeuralNetwork
         // It indicates how confident we are about the existing weight
         public double SigmoidDerivative(double x)
         {
-            //return x * (1 - x);
-            return Math.Exp(x) / Math.Pow(Math.Exp(x) + 1, 2);
+            return x * (1 - x);
+            //return Math.Exp(x) / Math.Pow(Math.Exp(x) + 1, 2);
         }
 
         public Vector<double> SigmoidDerivative(Vector<double> x)
@@ -55,20 +55,12 @@ namespace NeuralNetwork
             {
                 Vector<double> actualOutputs = this.Think(inputs);
 
-                Vector<double> error = actualOutputs - expectedOutputs;
-
-                //Vector<double> rawAdjustment = (error * SigmoidDerivative(actualOutputs));
-                //Vector<double> adjustment = inputs.Transpose() *
+                Vector<double> error = expectedOutputs - actualOutputs;
 
                 double[] rawAdjustmentArray = new double[actualOutputs.ToArray().Length];
                 for (int i = 0; i < actualOutputs.ToArray().Length; i++)
                 {
                     double rawAdjustment = error.AsArray()[i] * SigmoidDerivative(actualOutputs.AsArray()[i]);
-
-                    if (Math.Abs(rawAdjustment) > 3)
-                    {
-                        var wow = "hi";
-                    }
 
                     rawAdjustmentArray[i] = rawAdjustment;
                 }
@@ -83,12 +75,13 @@ namespace NeuralNetwork
 
         public Vector<double> Think(Matrix<double> input)
         {
-            return input * synaptic_weights;
+            Vector<double> outputs = input * synaptic_weights;
+            return outputs.Map(o => this.Sigmoid(o));
         }
 
         public double Think(Vector<double> input)
         {
-            return input * synaptic_weights;
+            return this.Sigmoid(input * synaptic_weights);
         }
 
         ////public void Train(double[,] inputs, double[] expectedOutputs, int numberOfTrainingIterations)
