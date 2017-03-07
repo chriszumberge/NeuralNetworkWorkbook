@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MathNet.Numerics.LinearAlgebra;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,162 +9,120 @@ namespace NeuralNetwork
 {
     public class NeuralNetwork
     {
-        int mNumInputs { get; set; }
-        int mNumOutputs { get; set; }
-        int mNumHiddenLayers { get; set; }
-        int mNeuronsPerHiddenLayer { get; set; }
-
         List<NeuronLayer> mLayers { get; set; } = new List<NeuronLayer>();
 
-        Random mRandom { get; set; }
-
-        public NeuralNetwork(Random random)
+        public NeuralNetwork(Random random, int numInputs, int numOutputs, params int[] numHiddenLayerNeurons)
         {
-            mRandom = random;
+            int numLastOutputs = numInputs;
+            
+            // Add all the hidden layers connecting the previous output to this input
+            for (int i = 0; i < numHiddenLayerNeurons.Length; i++)
+            {
+                mLayers.Add(new NeuronLayer(random, numHiddenLayerNeurons[i], numLastOutputs));
+                numLastOutputs = numHiddenLayerNeurons[i];
+            }
+
+            // Add the output layer
+            mLayers.Add(new NeuronLayer(random, numOutputs, numLastOutputs));
         }
 
-        public void CreateNetwork()
+        //The Sigmoid function, normalizes between 0 and 1
+        private double Sigmoid(double x)
         {
-            if (mNumHiddenLayers > 0)
-            {
-                // Add the first layer using the inputs
-                mLayers.Add(new NeuronLayer(mRandom, mNeuronsPerHiddenLayer, mNumInputs));
-
-                for (int i = 0; i < mNumHiddenLayers - 1; i++)
-                {
-                    mLayers.Add(new NeuronLayer(mRandom, mNumOutputs, mNeuronsPerHiddenLayer));
-                }
-
-                // create output layer
-                mLayers.Add(new NeuronLayer(mRandom, mNumOutputs, mNeuronsPerHiddenLayer));
-            }
-            else
-            {
-                // create output layer
-                mLayers.Add(new NeuronLayer(mRandom, mNumOutputs, mNumInputs));
-            }
+            return 1 / (1 + Math.Exp(-x));
         }
 
-        public List<double> GetWeights()
+        // Derivative of the Sigmoid funciton.
+        // The Gradient of the Sigmoid curve.
+        // It indicates how confident we are about the existing weight
+        private double SigmoidDerivative(double x)
         {
-            // this will hold the weights
-            List<double> weights = new List<double>();
+            return x * (1 - x);
+        }
 
-            // for each layer
-            for (int i = 0; i < mNumHiddenLayers + 1; i++)
+        public void Train(Matrix<double> inputs, Matrix<double> expectedOutputs, int numberOfTrainingIterations)
+        //public void Train(List<Vector<double>> inputs, Vector<double> expectedOutputs, int numberOfTrainingIterations)
+        {
+            for (int t = 0; t < numberOfTrainingIterations; t++)
             {
-                // for each neuron
-                for (int j = 0; j < mLayers[i].NumNeurons; j++)
+                //Matrix<double> outputFromLayer1 = Matrix<double>.Build.Sparse(1, 1);
+                //Matrix<double> outputFromLayer2 = Matrix<double>.Build.Sparse(1, 1);
+                List<Matrix<double>> outputs = new List<Matrix<double>>();
+                //this.Think(inputs, out outputFromLayer1, out outputFromLayer2);
+                this.Think(inputs, out outputs);
+
+                Matrix<double> outputLayer = outputs.Last();
+
+                // calculate error for output
+                Matrix<double> outputLayer_error = expectedOutputs - outputLayer;
+                double[,] outputLayer_deltaArray = new double[outputLayer_error.RowCount, outputLayer_error.ColumnCount];
+                for (int i = 0; i < outputLayer_error.RowCount; i++)
                 {
-                    // for each weight
-                    for (int k = 0; k < mLayers[i].Neurons[j].NumInputs; k++)
+                    for (int j = 0; j < outputLayer_error.ColumnCount; j++)
                     {
-                        weights.Add(mLayers[i].Neurons[j].Weights[k]);
+                        outputLayer_deltaArray[i, j] = outputLayer_error[i, j] * SigmoidDerivative(outputLayer[i, j]);
                     }
                 }
-            }
+                Matrix<double> outputLayer_delta = Matrix<double>.Build.Dense(outputLayer_error.RowCount, outputLayer_error.ColumnCount,
+                    (x, y) => outputLayer_deltaArray[x, y]);
 
-            return weights;
-        }
+                Matrix<double> inputsToThisLayer = outputs.Count == 1 ? inputs : outputs[outputs.Count - 2];
+                Matrix<double> thisLayerAdjustment = inputsToThisLayer.Transpose() * outputLayer_delta;
 
-        public int GetNumberOfWeights()
-        {
-            int weights = 0;
+                Matrix<double> previousSynapticWeights = mLayers.Last().SynapticWeights;
+                Matrix<double> previousLayerDelta = outputLayer_delta;
 
-            for (int i = 0; i < mNumHiddenLayers + 1; i++)
-            {
-                for (int j = 0; j < mLayers[i].NumNeurons; j++)
+
+                List<Matrix<double>> orderedLayerAdjustments = new List<Matrix<double>>();
+                orderedLayerAdjustments.Add(thisLayerAdjustment);
+
+                for (int i = mLayers.Count() - 2; i >= 0; i--)
                 {
-                    for (int k = 0; k < mLayers[i].Neurons[j].NumInputs; k++)
+                    Matrix<double> thisLayerOutput = outputs[i];
+
+                    Matrix<double> thisLayer_error = previousLayerDelta * previousSynapticWeights.Transpose();
+
+                    double[,] thisLayer_deltaArray = new double[thisLayer_error.RowCount, thisLayer_error.ColumnCount];
+                    for (int j = 0; j < thisLayer_error.RowCount; j++)
                     {
-                        weights++;
+                        for (int k = 0; k < thisLayer_error.ColumnCount; k++)
+                        {
+                            thisLayer_deltaArray[j, k] = thisLayer_error[j, k] * SigmoidDerivative(thisLayerOutput[j, k]);
+                        }
                     }
+                    Matrix<double> thisLayer_delta = Matrix<double>.Build.Dense(thisLayer_error.RowCount, thisLayer_error.ColumnCount,
+                        (x, y) => thisLayer_deltaArray[x, y]);
+
+                    inputsToThisLayer = i == 0 ? inputs : outputs[i - 1];
+                    thisLayerAdjustment = inputsToThisLayer.Transpose() * thisLayer_delta;
+                    orderedLayerAdjustments.Add(thisLayerAdjustment);
+
+                    previousSynapticWeights = mLayers[i].SynapticWeights;
+                    previousLayerDelta = thisLayer_delta;
+                }
+
+                orderedLayerAdjustments.Reverse();
+
+                for (int i = 0; i < mLayers.Count(); i++)
+                {
+                    NeuronLayer layer = mLayers[i];
+                    layer.SynapticWeights += orderedLayerAdjustments[i];
                 }
             }
-
-            return weights;
         }
 
-        public void PutWeights(List<double> weights)
+        public void Think(Matrix<double> input, out List<Matrix<double>> orderedOutputs)
         {
-            int cWeight = 0;
+            orderedOutputs = new List<Matrix<double>>();
 
-            // for each layer
-            for (int i = 0; i < mNumHiddenLayers + 1; i++)
+            Matrix<double> inputToNextLayer = input;
+
+            foreach (NeuronLayer layer in mLayers)
             {
-                // for each neuron
-                for (int j = 0; j < mLayers[i].NumNeurons; j++)
-                {
-                    // for each weight
-                    for (int k = 0; k < mLayers[i].Neurons[j].NumInputs; k++)
-                    {
-                        mLayers[i].Neurons[j].Weights[k] = weights[cWeight++];
-                    }
-                }
+                Matrix<double> outputFromThisLayer = (inputToNextLayer * layer.SynapticWeights).Map(o => this.Sigmoid(o));
+                orderedOutputs.Add(outputFromThisLayer);
+                inputToNextLayer = outputFromThisLayer;
             }
-
-            return;
-        }
-
-        // calculates outputs from a set of inputs
-        public List<double> Update(List<double> inputs)
-        {
-            // stores the resultant outputs from each layer
-            List<double> outputs = new List<double>();
-
-            int cWeight = 0;
-
-            // first check that we have the correct amount of inputs
-            if (inputs.Count != mNumInputs)
-            {
-                // just return an empty list
-                return outputs;
-            }
-
-            // for each layer..
-            for (int i = 0; i < mNumHiddenLayers + 1; i++)
-            {
-                if (i > 0)
-                {
-                    inputs = outputs;
-                }
-                outputs.Clear();
-
-                cWeight = 0;
-
-                // for each neuron sum the (inputs * corresponding weights)
-                // throw the total at our sigmund function to get the output
-                for (int j = 0; j < mLayers[i].NumNeurons; j++)
-                {
-                    double netInput = 0;
-                    int NumInputs = mLayers[i].Neurons[j].NumInputs;
-
-                    // for each weight
-                    for (int k = 0; k < NumInputs - 1; k++)
-                    {
-                        // sum the weights x inputs
-                        netInput += mLayers[i].Neurons[j].Weights[k] * inputs[cWeight++];
-                    }
-
-                    // add in the bias
-                    netInput += mLayers[i].Neurons[j].Weights[NumInputs - 1] * Params.Bias;
-
-                    // we can store the outputs from each layer as we generate them
-                    // the combined activation is first filtered through the sigmoid function
-                    //outputs.Add(Sigmoid(netInput, Params.ActivationResponse));
-                    outputs.Add(netInput);
-
-                    cWeight = 0;
-                }
-            }
-
-            return outputs;
-        }
-
-        // sigmoid response curve
-        internal double Sigmoid(double activation, double response)
-        {
-            return (1 / (1 + Math.Exp(-activation / response)));
         }
     }
 }

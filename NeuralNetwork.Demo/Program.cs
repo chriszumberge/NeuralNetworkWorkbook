@@ -14,6 +14,7 @@ using System.Text;
 using MathNet.Numerics.LinearAlgebra;
 using System.Collections.Generic;
 using System.Linq;
+using NeuralNetwork.Examples;
 
 namespace NeuralNetwork.Demo
 {
@@ -22,7 +23,42 @@ namespace NeuralNetwork.Demo
         public static void Main(string[] args)
         {
             //RunSimpleNeuralNetwork();
-            RunLayeredNeuralNetwork();
+            //RunLayeredNeuralNetwork();
+            RunOONeuralNetwork();
+        }
+
+        private static void RunOONeuralNetwork()
+        {
+            NeuralNetwork nn = new NeuralNetwork(new Random(), 3, 1, 4, 2);
+
+            double[,] training_set_input_array = new double[,]
+            {
+                {0, 0, 1 },
+                {0, 1, 1 },
+                {1, 0, 1 },
+                {0, 1, 0 },
+                {1, 0, 0 },
+                {1, 1, 1 },
+                {0, 0, 0 }
+            };
+            Matrix<double> training_set_inputs = Matrix<double>.Build.DenseOfArray(training_set_input_array);
+            double[,] training_set_output_array = new double[,]
+            {
+                { 0 }, { 1 }, { 1 }, { 1 }, { 1 }, { 0 }, { 0 }
+            };
+            Matrix<double> training_set_outputs = Matrix<double>.Build.DenseOfArray(training_set_output_array);
+
+            nn.Train(training_set_inputs, training_set_outputs, 100000);
+
+            List<Matrix<double>> outputs = new List<Matrix<double>>();
+            Matrix<double> newInput = Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 1, 0 } });
+
+
+            nn.Think(newInput, out outputs);
+
+            Console.WriteLine(outputs.Last());
+
+            Console.ReadLine();
         }
 
         private static void RunLayeredNeuralNetwork()
@@ -123,7 +159,7 @@ namespace NeuralNetwork.Demo
             Console.WriteLine("Considering new situation [1, 1, 0]");
 
             Matrix<double> newInput = Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 1, 0 } });
-           
+
 
             nn.Think(newInput, out outputs);
 

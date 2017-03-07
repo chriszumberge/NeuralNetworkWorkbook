@@ -10,7 +10,7 @@
 // All rights reserved
 //
 using System;
-namespace NeuralNetwork
+namespace NeuralNetwork.Examples
 {
     public static class Params
     {

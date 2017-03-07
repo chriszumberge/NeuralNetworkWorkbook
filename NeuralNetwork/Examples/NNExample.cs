@@ -12,7 +12,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace NeuralNetwork
+namespace NeuralNetwork.Examples
 {
     public class NNExample
     {

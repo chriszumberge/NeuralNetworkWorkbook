@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MathNet.Numerics.LinearAlgebra;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,21 +9,24 @@ namespace NeuralNetwork
 {
     public class NeuronLayer
     {
-        // The number of neurons in this layer
-        int mNumNeurons { get; set; }
-        public int NumNeurons => mNumNeurons;
-
-        // The layer of neurons
-        List<Neuron> mNeurons = new List<Neuron>();
-        public List<Neuron> Neurons { get { return mNeurons; } }
-
-        public NeuronLayer(Random random, int numNeurons, int numInputsPerNeuron)
+        Matrix<double> synaptic_weights { get; set; }
+        //public Matrix<double> SynapticWeights => synaptic_weights;
+        public Matrix<double> SynapticWeights
         {
-            mNumNeurons = numNeurons;
-            for (int i = 0; i < mNumNeurons; i++)
-            {
-                mNeurons.Add(new Neuron(random, numInputsPerNeuron));
-            }
+            get { return synaptic_weights; }
+            set { synaptic_weights = value; }
+        }
+
+        int mNumberOfNeurons { get; set; }
+        int mNumberOfInputsPerNeuron { get; set; }
+
+        public NeuronLayer(Random random, int numberOfNeurons, int numberOfInputsPerNeuron)
+        {
+            mNumberOfInputsPerNeuron = numberOfNeurons;
+            mNumberOfInputsPerNeuron = numberOfInputsPerNeuron;
+
+            synaptic_weights = Matrix<double>.Build.Dense(numberOfInputsPerNeuron,
+                numberOfNeurons, (int arg1, int arg2) => (random.NextDouble() * 2) - 1);
         }
     }
 }
