@@ -3,24 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MathNet.Numerics.LinearAlgebra;
 
 namespace NeuralNetwork
 {
     public class SimpleNeuralNetwork
     {
-        double[] synaptic_weights { get; set; }
-        public double[] SynapticWeights => synaptic_weights;
+        //double[] synaptic_weights { get; set; }
+        //public double[] SynapticWeights => synaptic_weights;
+        Vector<double> synaptic_weights { get; set; }
+        public Vector<double> SynapticWeights => synaptic_weights;
 
         public SimpleNeuralNetwork(int numInputs)
         {
             Random random = new Random();
 
-            synaptic_weights = new double[numInputs];
+            //synaptic_weights = new double[numInputs];
 
-            for (int i = 0; i < numInputs; i++)
-            {
-                synaptic_weights[i] = (random.NextDouble() * 2) - 1;
-            }
+            synaptic_weights = Vector<double>.Build.Dense(numInputs, (int arg) => (random.NextDouble() * 2) - 1);
+
+            //for (int i = 0; i < numInputs; i++)
+            //{
+            //    synaptic_weights[i] = (random.NextDouble() * 2) - 1;
+            //}
         }
 
         //The Sigmoid function, normalizes between 0 and 1
@@ -34,117 +39,165 @@ namespace NeuralNetwork
         // It indicates how confident we are about the existing weight
         public double SigmoidDerivative(double x)
         {
-            return x * (1 - x);
+            //return x * (1 - x);
+            return Math.Exp(x) / Math.Pow(Math.Exp(x) + 1, 2);
         }
 
+        public Vector<double> SigmoidDerivative(Vector<double> x)
+        {
+            List<double> results = x.ToList().Select(s => SigmoidDerivative(s)).ToList();
+            return Vector<double>.Build.DenseOfArray(results.ToArray());
+        }
 
-        //public void Train(double[,] inputs, double[] expectedOutputs, int numberOfTrainingIterations)
-        public void Train(double[][] inputs, double[] expectedOutputs, int numberOfTrainingIterations)
+        public void Train(Matrix<double> inputs, Vector<double> expectedOutputs, int numberOfTrainingIterations)
         {
             for (int t = 0; t < numberOfTrainingIterations; t++)
             {
-                double[] actualOutputs = new double[inputs.Length];
+                Vector<double> actualOutputs = this.Think(inputs);
 
-                for (int i = 0; i < inputs.Length; i++)
+                Vector<double> error = actualOutputs - expectedOutputs;
+
+                //Vector<double> rawAdjustment = (error * SigmoidDerivative(actualOutputs));
+                //Vector<double> adjustment = inputs.Transpose() *
+
+                double[] rawAdjustmentArray = new double[actualOutputs.ToArray().Length];
+                for (int i = 0; i < actualOutputs.ToArray().Length; i++)
                 {
-                    double[] input = inputs[i];
-                    actualOutputs[i] = this.Think(input);
-                }
+                    double rawAdjustment = error.AsArray()[i] * SigmoidDerivative(actualOutputs.AsArray()[i]);
 
-                double[] errors = new double[expectedOutputs.Length];
-                for (int i = 0; i < expectedOutputs.Length; i++)
-                {
-                    errors[i] = expectedOutputs[i] - actualOutputs[i];
-                }
-
-                double[] adjustedErrors = new double[expectedOutputs.Length];
-                for (int i = 0; i < expectedOutputs.Length; i++)
-                {
-                    adjustedErrors[i] = errors[i] * SigmoidDerivative(actualOutputs[i]);
-                }
-
-                double[][] transposedInputs = Transpose(inputs);
-
-                double[] adjustments = new double[adjustedErrors.Length];
-                for (int i = 0; i < transposedInputs.Length; i++)
-                {
-                    double adjustment = 0;
-                    double[] transposedInput = transposedInputs[i];
-
-                    for (int j = 0; j < transposedInput.Length; j++)
+                    if (Math.Abs(rawAdjustment) > 3)
                     {
-                        adjustment += transposedInput[j] * adjustments[j];
+                        var wow = "hi";
                     }
 
-                    adjustments[i] = adjustment;
+                    rawAdjustmentArray[i] = rawAdjustment;
                 }
+                Vector<double> rawAdjustments = Vector<double>.Build.DenseOfArray(rawAdjustmentArray);
 
-                for (int i = 0; i < synaptic_weights.Length; i++)
-                {
-                    synaptic_weights[i] += adjustments[i];
-                }
+                //Vector<double> adjustment = Matrix<double>.op_DotMultiply(inputs, error * actualOutputs.Map((arg) => SigmoidDerivative(arg)));
+                Vector<double> adjustment = inputs.Transpose() * rawAdjustments;
 
-
-                //double[,] actualOutput = Dot(inputs, ToVector(synaptic_weights));
-
-                //double[] errors = new double[expectedOutputs.Length];
-                //double[] rawAdjustments = new double[expectedOutputs.Length];
-                ////double[] adjustments = new double[synaptic_weights.Length];
-
-                //for (int i = 0; i < expectedOutputs.Length; i++)
-                //{
-                //    errors[i] = actualOutput[0, i] - expectedOutputs[i];
-                //    rawAdjustments[i] = errors[i] * SigmoidDerivative(actualOutput[0, i]);
-                //}
-
-                //var adjustment = Dot(inputs, ToVector(rawAdjustments));
-
-                ////double[] adjustments = Dot(inputs, rawAdjustments);
-
-                //for (int i = 0; i < synaptic_weights.Length - 1; i++)
-                //{
-                //    synaptic_weights[i] += adjustment[0, i];
-                //}
+                synaptic_weights += adjustment;
             }
         }
 
-        private double[][] Transpose(double[][] array)
+        public Vector<double> Think(Matrix<double> input)
         {
-            double[][] newArray = new double[array[0].Length][];
-            for (int i = 0; i < array[0].Length; i++)
-            {
-                double[] newInnerArray = new double[array.Length];
-                for (int j = 0; j < array.Length; j++)
-                {
-                    newInnerArray[j] = array[j][i];
-                }
-                newArray[i] = newInnerArray;
-            }
-            return newArray;
+            return input * synaptic_weights;
         }
 
-        public double Think(double[] input)
+        public double Think(Vector<double> input)
         {
-            //return Dot(input, synaptic_weights).Sum();
-            double output = 0;
-
-            for (int i = 0; i < input.Length; i++)
-            {
-                output += input[i] * synaptic_weights[i];
-            }
-
-            return output;
+            return input * synaptic_weights;
         }
 
-        public double[] Multiply(double[] vector, double scalar)
-        {
-            double[] result = new double[vector.Length];
-            for (int i = 0; i < vector.Length; i++)
-            {
-                result[i] = vector[i] * scalar;
-            }
-            return result;
-        }
+        ////public void Train(double[,] inputs, double[] expectedOutputs, int numberOfTrainingIterations)
+        //public void Train(double[][] inputs, double[] expectedOutputs, int numberOfTrainingIterations)
+        //{
+        //    for (int t = 0; t < numberOfTrainingIterations; t++)
+        //    {
+        //        double[] actualOutputs = new double[inputs.Length];
+
+        //        for (int i = 0; i < inputs.Length; i++)
+        //        {
+        //            double[] input = inputs[i];
+        //            actualOutputs[i] = this.Think(input);
+        //        }
+
+        //        double[] errors = new double[expectedOutputs.Length];
+        //        for (int i = 0; i < expectedOutputs.Length; i++)
+        //        {
+        //            errors[i] = expectedOutputs[i] - actualOutputs[i];
+        //        }
+
+        //        double[] adjustedErrors = new double[expectedOutputs.Length];
+        //        for (int i = 0; i < expectedOutputs.Length; i++)
+        //        {
+        //            adjustedErrors[i] = errors[i] * SigmoidDerivative(actualOutputs[i]);
+        //        }
+
+        //        double[][] transposedInputs = Transpose(inputs);
+
+        //        double[] adjustments = new double[adjustedErrors.Length];
+        //        for (int i = 0; i < transposedInputs.Length; i++)
+        //        {
+        //            double adjustment = 0;
+        //            double[] transposedInput = transposedInputs[i];
+
+        //            for (int j = 0; j < transposedInput.Length; j++)
+        //            {
+        //                adjustment += transposedInput[j] * adjustments[j];
+        //            }
+
+        //            adjustments[i] = adjustment;
+        //        }
+
+        //        for (int i = 0; i < synaptic_weights.Length; i++)
+        //        {
+        //            synaptic_weights[i] += adjustments[i];
+        //        }
+
+
+        //        //double[,] actualOutput = Dot(inputs, ToVector(synaptic_weights));
+
+        //        //double[] errors = new double[expectedOutputs.Length];
+        //        //double[] rawAdjustments = new double[expectedOutputs.Length];
+        //        ////double[] adjustments = new double[synaptic_weights.Length];
+
+        //        //for (int i = 0; i < expectedOutputs.Length; i++)
+        //        //{
+        //        //    errors[i] = actualOutput[0, i] - expectedOutputs[i];
+        //        //    rawAdjustments[i] = errors[i] * SigmoidDerivative(actualOutput[0, i]);
+        //        //}
+
+        //        //var adjustment = Dot(inputs, ToVector(rawAdjustments));
+
+        //        ////double[] adjustments = Dot(inputs, rawAdjustments);
+
+        //        //for (int i = 0; i < synaptic_weights.Length - 1; i++)
+        //        //{
+        //        //    synaptic_weights[i] += adjustment[0, i];
+        //        //}
+        //    }
+        //}
+
+        //private double[][] Transpose(double[][] array)
+        //{
+        //    double[][] newArray = new double[array[0].Length][];
+        //    for (int i = 0; i < array[0].Length; i++)
+        //    {
+        //        double[] newInnerArray = new double[array.Length];
+        //        for (int j = 0; j < array.Length; j++)
+        //        {
+        //            newInnerArray[j] = array[j][i];
+        //        }
+        //        newArray[i] = newInnerArray;
+        //    }
+        //    return newArray;
+        //}
+
+        //public double Think(double[] input)
+        //{
+        //    //return Dot(input, synaptic_weights).Sum();
+        //    double output = 0;
+
+        //    for (int i = 0; i < input.Length; i++)
+        //    {
+        //        output += input[i] * synaptic_weights[i];
+        //    }
+
+        //    return output;
+        //}
+
+        //public double[] Multiply(double[] vector, double scalar)
+        //{
+        //    double[] result = new double[vector.Length];
+        //    for (int i = 0; i < vector.Length; i++)
+        //    {
+        //        result[i] = vector[i] * scalar;
+        //    }
+        //    return result;
+        //}
 
         //public double[] Dot(double[] vector, double[] multiplier)
         //{
