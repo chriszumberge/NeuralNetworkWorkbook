@@ -13,6 +13,7 @@ using System;
 using System.Text;
 using MathNet.Numerics.LinearAlgebra;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NeuralNetwork.Demo
 {
@@ -27,19 +28,20 @@ namespace NeuralNetwork.Demo
         private static void RunLayeredNeuralNetwork()
         {
             // 4 neurons with 3 inputs
-            var layer1 = new LayeredNeuralNetwork.NeuronLayer(4, 3);
-            // 1 neuron with 4 inputs
-            var layer2 = new LayeredNeuralNetwork.NeuronLayer(1, 4);
+            var layer1 = new LayeredNeuralNetwork.NeuronLayer(6, 3);
+            // 5 neurons with 4 inputs
+            //var layer2 = new LayeredNeuralNetwork.NeuronLayer(1, 4);
+            //var layer2 = new LayeredNeuralNetwork.NeuronLayer(2, 4);
+            var layer2 = new LayeredNeuralNetwork.NeuronLayer(5, 6);
+            var layer3 = new LayeredNeuralNetwork.NeuronLayer(4, 5);
+            var layer4 = new LayeredNeuralNetwork.NeuronLayer(3, 4);
+            var layer5 = new LayeredNeuralNetwork.NeuronLayer(2, 3);
+            var layer6 = new LayeredNeuralNetwork.NeuronLayer(1, 2);
 
-            LayeredNeuralNetwork nn = new LayeredNeuralNetwork(layer1, layer2);
+            //LayeredNeuralNetwork nn = new LayeredNeuralNetwork(layer1, layer2);
+            LayeredNeuralNetwork nn = new LayeredNeuralNetwork(layer1, layer2, layer3, layer4, layer5, layer6);
 
             Console.WriteLine("Random starting synaptic weights: ");
-            //Console.WriteLine(nn.SynapticWeights.ToString());
-            Console.WriteLine("Layer 1 (4 neurons, each with 3 inputs)");
-            Console.WriteLine(nn.Layer1.SynapticWeights.ToString());
-            Console.WriteLine("Layer 2 (1 neuron with 4 inputs)");
-            Console.WriteLine(nn.Layer2.SynapticWeights.ToString());
-
 
             double[,] training_set_input_array = new double[,]
             {
@@ -72,55 +74,60 @@ namespace NeuralNetwork.Demo
             {
                 { 0 }, { 1 }, { 1 }, { 1 }, { 1 }, { 0 }, { 0 }
             };
+            //double[,] training_set_output_array = new double[,]
+            //{
+            //    { 0, 1}, { 1, 1 }, { 1, 1 }, { 1, 0 }, { 1, 0 }, { 0, 1 }, { 0, 0 }
+            //};
             Matrix<double> training_set_outputs = Matrix<double>.Build.DenseOfArray(training_set_output_array);
 
             nn.Train(training_set_inputs, training_set_outputs, 100000);
 
-            Console.WriteLine("New Synaptic Weights");
-            Console.WriteLine("Layer 1 (4 neurons, each with 3 inputs)");
-            Console.WriteLine(nn.Layer1.SynapticWeights.ToString());
-            Console.WriteLine("Layer 2 (1 neuron with 4 inputs)");
-            Console.WriteLine(nn.Layer2.SynapticWeights.ToString());
+            //Console.WriteLine("New Synaptic Weights");
+            //Console.WriteLine("Layer 1 (4 neurons, each with 3 inputs)");
+            //Console.WriteLine(nn.Layer1.SynapticWeights.ToString());
+            //Console.WriteLine("Layer 2 (1 neuron with 4 inputs)");
+            //Console.WriteLine(nn.Layer2.SynapticWeights.ToString());
 
-            Matrix<double> hidden_state = Matrix<double>.Build.Dense(1, 1, 0);
-            Matrix<double> output = Matrix<double>.Build.Dense(1, 1, 0);
+            //Matrix<double> hidden_state = Matrix<double>.Build.Dense(1, 1, 0);
+            //Matrix<double> output = Matrix<double>.Build.Dense(1, 1, 0);
+            List<Matrix<double>> outputs = new List<Matrix<double>>();
 
             Console.WriteLine("Training Set 1 -> 0");
-            nn.Think(Matrix<double>.Build.DenseOfArray(new double[,] { { 0, 0, 1 } }), out hidden_state, out output);
-            Console.WriteLine(output);
+            nn.Think(Matrix<double>.Build.DenseOfArray(new double[,] { { 0, 0, 1 } }), out outputs);
+            Console.WriteLine(outputs.Last());
 
             Console.WriteLine("Training Set 2 -> 1");
-            nn.Think(Matrix<double>.Build.DenseOfArray(new double[,] { { 0, 1, 1 } }), out hidden_state, out output);
-            Console.WriteLine(output);
+            nn.Think(Matrix<double>.Build.DenseOfArray(new double[,] { { 0, 1, 1 } }), out outputs);
+            Console.WriteLine(outputs.Last());
 
             Console.WriteLine("Training Set 3 -> 1");
-            nn.Think(Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 0, 1 } }), out hidden_state, out output);
-            Console.WriteLine(output);
+            nn.Think(Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 0, 1 } }), out outputs);
+            Console.WriteLine(outputs.Last());
 
             Console.WriteLine("Training Set 4 -> 1");
-            nn.Think(Matrix<double>.Build.DenseOfArray(new double[,] { { 0, 1, 0 } }), out hidden_state, out output);
-            Console.WriteLine(output);
+            nn.Think(Matrix<double>.Build.DenseOfArray(new double[,] { { 0, 1, 0 } }), out outputs);
+            Console.WriteLine(outputs.Last());
 
             Console.WriteLine("Training Set 5 -> 1");
-            nn.Think(Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 0, 0 } }), out hidden_state, out output);
-            Console.WriteLine(output);
+            nn.Think(Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 0, 0 } }), out outputs);
+            Console.WriteLine(outputs.Last());
 
             Console.WriteLine("Training Set 6 -> 0");
-            nn.Think(Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 1, 1 } }), out hidden_state, out output);
-            Console.WriteLine(output);
+            nn.Think(Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 1, 1 } }), out outputs);
+            Console.WriteLine(outputs.Last());
 
             Console.WriteLine("Training Set 7 -> 0");
-            nn.Think(Matrix<double>.Build.DenseOfArray(new double[,] { { 0, 0, 0 } }), out hidden_state, out output);
-            Console.WriteLine(output);
+            nn.Think(Matrix<double>.Build.DenseOfArray(new double[,] { { 0, 0, 0 } }), out outputs);
+            Console.WriteLine(outputs.Last());
 
             Console.WriteLine("Considering new situation [1, 1, 0]");
 
             Matrix<double> newInput = Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 1, 0 } });
            
 
-            nn.Think(newInput, out hidden_state, out output);
+            nn.Think(newInput, out outputs);
 
-            Console.WriteLine(output);
+            Console.WriteLine(outputs.Last());
 
             Console.ReadLine();
         }
