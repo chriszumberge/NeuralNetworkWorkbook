@@ -15,6 +15,7 @@ using MathNet.Numerics.LinearAlgebra;
 using System.Collections.Generic;
 using System.Linq;
 using NeuralNetwork.Examples;
+using NeuralNetwork.Training;
 
 namespace NeuralNetwork.Demo
 {
@@ -24,7 +25,137 @@ namespace NeuralNetwork.Demo
         {
             //RunSimpleNeuralNetwork();
             //RunLayeredNeuralNetwork();
-            RunOONeuralNetwork();
+            //RunOONeuralNetwork();
+            RunOONeuralNetworkTrainingDiagnostics();
+        }
+
+        private static void RunOONeuralNetworkTrainingDiagnostics()
+        {
+            // -1 just selects best, otherwise give number
+            int maxAvgError = -1;
+
+            double[,] training_set_input_array = new double[,]
+            {
+                {0, 0, 1 },
+                {0, 1, 1 },
+                {1, 0, 1 },
+                {0, 1, 0 },
+                {1, 0, 0 },
+                {1, 1, 1 },
+                {0, 0, 0 }
+            };
+            Matrix<double> training_set_inputs = Matrix<double>.Build.DenseOfArray(training_set_input_array);
+            double[,] training_set_output_array = new double[,]
+            {
+                { 0 }, { 1 }, { 1 }, { 1 }, { 1 }, { 0 }, { 0 }
+            };
+            Matrix<double> training_set_outputs = Matrix<double>.Build.DenseOfArray(training_set_output_array);
+
+            Random random = new Random();
+            NeuralNetwork nn1 = new NeuralNetwork(random, 3, 1);
+            NeuralNetwork nn2 = new NeuralNetwork(random, 3, 1, 1);
+            NeuralNetwork nn3 = new NeuralNetwork(random, 3, 1, 2);
+            NeuralNetwork nn4 = new NeuralNetwork(random, 3, 1, 3);
+            NeuralNetwork nn5 = new NeuralNetwork(random, 3, 1, 4, 1);
+            NeuralNetwork nn6 = new NeuralNetwork(random, 3, 1, 4, 2);
+            NeuralNetwork nn7 = new NeuralNetwork(random, 3, 1, 4, 3);
+
+            int numTrainingIterations = 100000;
+
+            List<TrainingSet> trainingSets = new List<TrainingSet>();
+            trainingSets.Add(new TrainingSet(nn1, training_set_inputs, training_set_outputs, numTrainingIterations));
+            trainingSets.Add(new TrainingSet(nn2, training_set_inputs, training_set_outputs, numTrainingIterations));
+            trainingSets.Add(new TrainingSet(nn3, training_set_inputs, training_set_outputs, numTrainingIterations));
+            trainingSets.Add(new TrainingSet(nn4, training_set_inputs, training_set_outputs, numTrainingIterations));
+            trainingSets.Add(new TrainingSet(nn5, training_set_inputs, training_set_outputs, numTrainingIterations));
+            trainingSets.Add(new TrainingSet(nn6, training_set_inputs, training_set_outputs, numTrainingIterations));
+            trainingSets.Add(new TrainingSet(nn7, training_set_inputs, training_set_outputs, numTrainingIterations));
+
+
+            for (int i = 0; i < trainingSets.Count; i++)
+            {
+                Console.WriteLine("Training Set #" + (i + 1).ToString());
+                Console.WriteLine(String.Join(", ", trainingSets[i].Network.GetNumberOfNeuronsPerLayer()));
+                Console.WriteLine(String.Concat("+/-", trainingSets[i].AverageError));
+                Console.WriteLine(String.Concat(trainingSets[i].AverageProcessingTime.TotalMilliseconds, " ms per op"));
+                Console.WriteLine(String.Concat(trainingSets[i].TrainingTime.TotalMilliseconds, " ms to train"));
+                Console.WriteLine();
+            }
+
+            List<TrainingSet> variationSets = new List<TrainingSet>();
+
+            TrainingSet topPerformingSet = null;
+            topPerformingSet = trainingSets.Where(x => x.AverageError < maxAvgError).OrderBy(x => x.AverageProcessingTime).FirstOrDefault();
+            // If this is null, that means there were none with an error under the max error so just grab the first one we can find
+            if (topPerformingSet == null)
+            {
+                topPerformingSet = trainingSets.OrderBy(x => x.AverageError).First();
+            }
+
+            variationSets.Add(topPerformingSet);
+
+            List<NeuronLayer> topPerformingHiddenLayers = topPerformingSet.Network.Layers.GetRange(1, topPerformingSet.Network.Layers.Count - 2);
+
+            if (topPerformingHiddenLayers.Count > 0) {
+                List<int> variation1 = topPerformingHiddenLayers.Select(x => x.NumberOfNeurons).ToList();
+                if (variation1.Count > 0)
+                {
+                    variation1[0] += 1;
+                }
+                NeuralNetwork topVar1 = new NeuralNetwork(random, 3, 1, variation1.ToArray());
+                variationSets.Add(new TrainingSet(topVar1, training_set_inputs, training_set_outputs, numTrainingIterations));
+
+                List<int> variation2 = topPerformingHiddenLayers.Select(x => x.NumberOfNeurons).ToList();
+                if (variation2.Count > 0 && variation2[0] > 0)
+                {
+                    variation2[0] -= 1;
+                }
+                NeuralNetwork topVar2 = new NeuralNetwork(random, 3, 1, variation2.ToArray());
+                variationSets.Add(new TrainingSet(topVar2, training_set_inputs, training_set_outputs, numTrainingIterations));
+            }
+
+            int avgDifference = (int)Math.Round((topPerformingSet.Network.mNumInputs + topPerformingSet.Network.mNumOuputs) / 2.0);
+            for (int i = avgDifference - 2; i <= avgDifference + 2; i++)
+            {
+                if (i > 0)
+                {
+                    List<int> variation = topPerformingHiddenLayers.Select(x => x.NumberOfNeurons).ToList();
+                    variation.Add(i);
+                    NeuralNetwork varNN = new NeuralNetwork(random, 3, 1, variation.ToArray());
+                    variationSets.Add(new TrainingSet(varNN, training_set_inputs, training_set_outputs, numTrainingIterations));
+                }
+            }
+
+            for (int i = 0; i < variationSets.Count; i++)
+            {
+                Console.WriteLine(String.Join(", ", variationSets[i].Network.GetNumberOfNeuronsPerLayer()));
+                Console.WriteLine(String.Concat("+/-", variationSets[i].AverageError));
+                Console.WriteLine(String.Concat(variationSets[i].AverageProcessingTime.TotalMilliseconds, " ms per op"));
+                Console.WriteLine(String.Concat(variationSets[i].TrainingTime.TotalMilliseconds, " ms to train"));
+                Console.WriteLine();
+            }
+
+            TrainingSet finalTopSet = variationSets.OrderBy(x => x.AverageError).First();
+
+            Console.WriteLine("Winner");
+            Console.WriteLine(String.Join(", ", finalTopSet.Network.GetNumberOfNeuronsPerLayer()));
+            Console.WriteLine(String.Concat("+/-", finalTopSet.AverageError));
+            Console.WriteLine(String.Concat(finalTopSet.AverageProcessingTime.TotalMilliseconds, " ms per op"));
+            Console.WriteLine(String.Concat(finalTopSet.TrainingTime.TotalMilliseconds, " ms to train"));
+            Console.WriteLine();
+
+
+            //nn.Train(training_set_inputs, training_set_outputs, 100000);
+
+            //List<Matrix<double>> outputs = new List<Matrix<double>>();
+            //Matrix<double> newInput = Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 1, 0 } });
+
+
+            //nn.Think(newInput, out outputs);
+
+            //Console.WriteLine(outputs.Last());
+
+            Console.ReadLine();
         }
 
         private static void RunOONeuralNetwork()

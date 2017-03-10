@@ -17,11 +17,13 @@ namespace NeuralNetwork
             set { synaptic_weights = value; }
         }
 
+        public int NumberOfNeurons { get { return mNumberOfNeurons;} }
         int mNumberOfNeurons { get; set; }
         int mNumberOfInputsPerNeuron { get; set; }
 
         public NeuronLayer(Random random, int numberOfNeurons, int numberOfInputsPerNeuron)
         {
+            mNumberOfNeurons = numberOfNeurons;
             mNumberOfInputsPerNeuron = numberOfNeurons;
             mNumberOfInputsPerNeuron = numberOfInputsPerNeuron;
 

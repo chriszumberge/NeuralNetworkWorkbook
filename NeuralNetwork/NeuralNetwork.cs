@@ -9,10 +9,20 @@ namespace NeuralNetwork
 {
     public class NeuralNetwork
     {
+        public List<NeuronLayer> Layers { get { return mLayers; } }
         List<NeuronLayer> mLayers { get; set; } = new List<NeuronLayer>();
+
+        public int NumInputs { get { return mNumInputs; } }
+        public int mNumInputs { get; set; }
+
+        public int NumOutputs { get { return mNumOuputs; } }
+        public int mNumOuputs { get; set; }
 
         public NeuralNetwork(Random random, int numInputs, int numOutputs, params int[] numHiddenLayerNeurons)
         {
+            mNumInputs = numInputs;
+            mNumOuputs = numOutputs;
+
             int numLastOutputs = numInputs;
             
             // Add all the hidden layers connecting the previous output to this input
@@ -24,6 +34,17 @@ namespace NeuralNetwork
 
             // Add the output layer
             mLayers.Add(new NeuronLayer(random, numOutputs, numLastOutputs));
+        }
+
+        public List<int> GetNumberOfNeuronsPerLayer()
+        {
+            List<int> num = new List<int>();
+            num.Add(mNumInputs);
+            foreach(NeuronLayer layer in mLayers)
+            {
+                num.Add(layer.NumberOfNeurons);
+            }
+            return num;
         }
 
         //The Sigmoid function, normalizes between 0 and 1
@@ -123,6 +144,11 @@ namespace NeuralNetwork
                 orderedOutputs.Add(outputFromThisLayer);
                 inputToNextLayer = outputFromThisLayer;
             }
+        }
+
+        public void Think(Vector<double> input, out List<Matrix<double>> orderedOutputs)
+        {
+            this.Think(input.ToRowMatrix(), out orderedOutputs);
         }
     }
 }

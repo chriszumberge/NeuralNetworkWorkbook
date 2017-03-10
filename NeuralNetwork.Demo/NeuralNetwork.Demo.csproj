@@ -37,6 +37,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\NeuralNetwork.Training\NeuralNetwork.Training.csproj">
+      <Project>{9bc56678-1c29-407f-ba04-5edb1aef2e15}</Project>
+      <Name>NeuralNetwork.Training</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NeuralNetwork\NeuralNetwork.csproj">
       <Project>{f83a9f88-4df4-43da-9f78-45c5e4900932}</Project>
       <Name>NeuralNetwork</Name>
