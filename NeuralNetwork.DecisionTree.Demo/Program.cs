@@ -11,25 +11,37 @@ namespace NeuralNetwork.DecisionTree.Demo
     {
         static void Main(string[] args)
         {
-            //var fishSet = GetFishDataSet();
+            RunFishDecisionAnalysis();
 
-            //Tree tree = fishSet.BuildTree();
+            RunBatmanDecisionAnalysis();
 
-            //Console.WriteLine(tree.DisplayTree());
+            Console.ReadLine();
+        }
 
-            //Console.WriteLine("Testing new data");
+        private static void RunFishDecisionAnalysis()
+        {
+            var fishSet = GetFishDataSet();
 
-            //var testInstance = new Instance
-            //{
-            //    Features = new List<Feature>
-            //    {
-            //        new Feature("0", FISH_CAN_SURVIVE_WITHOUT_SURFACING),
-            //        new Feature("1", FISH_HAS_FLIPPERS)
-            //    }
-            //};
-            //var output = Tree.ProcessInstance(tree, testInstance);
-            //Console.WriteLine($"{output.Axis}: {output.Value}");
+            Tree tree = fishSet.BuildTree();
 
+            Console.WriteLine(tree.DisplayTree());
+
+            Console.WriteLine("Testing new data");
+
+            var testInstance = new Instance
+            {
+                Features = new List<Feature>
+                {
+                    new Feature("0", FISH_CAN_SURVIVE_WITHOUT_SURFACING),
+                    new Feature("1", FISH_HAS_FLIPPERS)
+                }
+            };
+            var output = Tree.ProcessInstance(tree, testInstance);
+            Console.WriteLine($"{output.Axis}: {output.Value}");
+        }
+
+        private static void RunBatmanDecisionAnalysis()
+        {
             var heroSet = GetHeroDataSet();
             Tree tree = heroSet.BuildTree();
             Console.WriteLine(tree.DisplayTree());
@@ -178,8 +190,6 @@ namespace NeuralNetwork.DecisionTree.Demo
             };
             output = Tree.ProcessInstance(tree, testInstance);
             Console.WriteLine($"{output.Axis}: {output.Value}");
-
-            Console.ReadLine();
         }
 
         const string FISH_CAN_SURVIVE_WITHOUT_SURFACING = "can survive without surfacing";
