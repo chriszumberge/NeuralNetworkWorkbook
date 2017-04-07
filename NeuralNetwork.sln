@@ -10,7 +10,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNetwork.Demo", "Neura
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNetwork.Training", "NeuralNetwork.Training\NeuralNetwork.Training.csproj", "{9BC56678-1C29-407F-BA04-5EDB1AEF2E15}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNetwork.MarchMadness", "NeuralNetwork.MarchMadness\NeuralNetwork.MarchMadness.csproj", "{1779DD3A-8270-42EF-9852-5A4042858B71}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNetwork.ArticleExamples", "NeuralNetwork.ArticleExamples\NeuralNetwork.ArticleExamples.csproj", "{437C57FE-0F8E-4611-A3CB-08CE9418D7D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNetwork.DecisionTree", "NeuralNetwork.DecisionTree\NeuralNetwork.DecisionTree.csproj", "{4763FCBF-E36A-44F6-BB41-5F97B3696516}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNetwork.DecisionTree.Demo", "NeuralNetwork.DecisionTree.Demo\NeuralNetwork.DecisionTree.Demo.csproj", "{BCA9524B-B0BB-4F29-8623-6F1F12E33B6E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,10 +38,18 @@ Global
 		{9BC56678-1C29-407F-BA04-5EDB1AEF2E15}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9BC56678-1C29-407F-BA04-5EDB1AEF2E15}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9BC56678-1C29-407F-BA04-5EDB1AEF2E15}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1779DD3A-8270-42EF-9852-5A4042858B71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1779DD3A-8270-42EF-9852-5A4042858B71}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1779DD3A-8270-42EF-9852-5A4042858B71}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1779DD3A-8270-42EF-9852-5A4042858B71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{437C57FE-0F8E-4611-A3CB-08CE9418D7D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{437C57FE-0F8E-4611-A3CB-08CE9418D7D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{437C57FE-0F8E-4611-A3CB-08CE9418D7D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{437C57FE-0F8E-4611-A3CB-08CE9418D7D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4763FCBF-E36A-44F6-BB41-5F97B3696516}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4763FCBF-E36A-44F6-BB41-5F97B3696516}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4763FCBF-E36A-44F6-BB41-5F97B3696516}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4763FCBF-E36A-44F6-BB41-5F97B3696516}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCA9524B-B0BB-4F29-8623-6F1F12E33B6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCA9524B-B0BB-4F29-8623-6F1F12E33B6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCA9524B-B0BB-4F29-8623-6F1F12E33B6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCA9524B-B0BB-4F29-8623-6F1F12E33B6E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -73,7 +73,7 @@ namespace NeuralNetwork.Examples
             }
         }
 
-        public Vector<double> Think(Matrix<double> input)
+        private Vector<double> Think(Matrix<double> input)
         {
             Vector<double> outputs = input * synaptic_weights;
             return outputs.Map(o => this.Sigmoid(o));
