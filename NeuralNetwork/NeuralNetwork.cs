@@ -18,39 +18,79 @@ namespace NeuralNetwork
         public int NumOutputs { get { return mNumOuputs; } }
         public int mNumOuputs { get; set; }
 
-        public NeuralNetwork(Random random, int numInputs, int numOutputs, params int[] numHiddenLayerNeurons)
+        //public NeuralNetwork(Random random, int numInputs, int numOutputs, params int[] numHiddenLayerNeurons)        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NeuralNetwork"/> class.
+        /// </summary>
+        /// <param name="random">The random.</param>
+        /// <param name="numInputs">The number inputs.</param>
+        /// <param name="numNeuronsFirstLayer">The first layer. Output layer in networks with no hidden layers</param>
+        /// <param name="numHiddenLayerNeurons">The number hidden layer neurons.</param>
+        public NeuralNetwork(Random random, int numInputs, int numNeuronsFirstLayer, params int[] numNeuronsAdditionalLayers)
         {
+            // Handle bias
             mNumInputs = numInputs;
-            mNumOuputs = numOutputs;
 
-            int numLastOutputs = numInputs;
+            List<int> consecutiveLayers = new int[] { numNeuronsFirstLayer }.Concat(numNeuronsAdditionalLayers).ToList();
             
+            mNumOuputs = consecutiveLayers.Last();
+            consecutiveLayers.RemoveAt(consecutiveLayers.Count - 1);
+
+            int numLastOutputs = mNumInputs;
+
             // Add all the hidden layers connecting the previous output to this input
-            for (int i = 0; i < numHiddenLayerNeurons.Length; i++)
+            for (int i = 0; i < consecutiveLayers.Count; i++)
             {
-                mLayers.Add(new NeuronLayer(random, numHiddenLayerNeurons[i], numLastOutputs));
-                numLastOutputs = numHiddenLayerNeurons[i];
+                mLayers.Add(new NeuronLayer(random, consecutiveLayers[i], numLastOutputs));
+                numLastOutputs = consecutiveLayers[i];
             }
 
             // Add the output layer
-            mLayers.Add(new NeuronLayer(random, numOutputs, numLastOutputs));
+            mLayers.Add(new NeuronLayer(random, mNumOuputs, numLastOutputs));
+        }
+
+        public NeuralNetwork(Random random, int numInputs, params int[] numNeuronsAdditionalLayers)
+        {
+            if (numNeuronsAdditionalLayers.Length < 1)
+            {
+                throw new ArgumentException("Must be at least one additional layer for output");
+            }
+
+            mNumInputs = numInputs;
+
+            List<int> consecutiveLayers = numNeuronsAdditionalLayers.ToList();
+
+            mNumOuputs = consecutiveLayers.Last();
+            consecutiveLayers.RemoveAt(consecutiveLayers.Count - 1);
+
+            int numLastOutputs = numInputs;
+
+            // Add all the hidden layers connecting the previous output to this input
+            for (int i = 0; i < consecutiveLayers.Count; i++)
+            {
+                mLayers.Add(new NeuronLayer(random, consecutiveLayers[i], numLastOutputs));
+                numLastOutputs = consecutiveLayers[i];
+            }
+
+            // Add the output layer
+            mLayers.Add(new NeuronLayer(random, mNumOuputs, numLastOutputs));
         }
 
         public List<int> GetNumberOfNeuronsPerLayer()
         {
             List<int> num = new List<int>();
             num.Add(mNumInputs);
-            foreach(NeuronLayer layer in mLayers)
+            foreach (NeuronLayer layer in mLayers)
             {
                 num.Add(layer.NumberOfNeurons);
             }
             return num;
         }
 
-        //The Sigmoid function, normalizes between 0 and 1
-        private double Sigmoid(double x)
+        //The Sigmoid function, normalizes between 0 and 1, the higher the response modifier the more steep the curve
+        private double Sigmoid(double x, double responseModifier = 1.0)
         {
-            return 1 / (1 + Math.Exp(-x));
+            return 1 / (1 + Math.Exp(-x / responseModifier));
         }
 
         // Derivative of the Sigmoid funciton.
@@ -58,19 +98,18 @@ namespace NeuralNetwork
         // It indicates how confident we are about the existing weight
         private double SigmoidDerivative(double x)
         {
-            return x * (1 - x);
+            return (x) * (1 - (x));
         }
 
         public void Train(Matrix<double> inputs, Matrix<double> expectedOutputs, int numberOfTrainingIterations)
-        //public void Train(List<Vector<double>> inputs, Vector<double> expectedOutputs, int numberOfTrainingIterations)
         {
+            // Add identity for bias
+            //inputs = inputs.InsertColumn(inputs.ColumnCount, Vector<double>.Build.Dense(inputs.RowCount, 1));
+
             for (int t = 0; t < numberOfTrainingIterations; t++)
             {
-                //Matrix<double> outputFromLayer1 = Matrix<double>.Build.Sparse(1, 1);
-                //Matrix<double> outputFromLayer2 = Matrix<double>.Build.Sparse(1, 1);
                 List<Matrix<double>> outputs = new List<Matrix<double>>();
-                //this.Think(inputs, out outputFromLayer1, out outputFromLayer2);
-                this.Think(inputs, out outputs);
+                this.Think(inputs, mLayers, out outputs);
 
                 Matrix<double> outputLayer = outputs.Last();
 
@@ -131,24 +170,47 @@ namespace NeuralNetwork
                 }
             }
         }
-
-        public void Think(Matrix<double> input, out List<Matrix<double>> orderedOutputs)
+        
+        private void Think(Matrix<double> input, List<NeuronLayer> layers, out List<Matrix<double>> orderedOutputs)
         {
             orderedOutputs = new List<Matrix<double>>();
 
             Matrix<double> inputToNextLayer = input;
 
-            foreach (NeuronLayer layer in mLayers)
+            foreach (NeuronLayer layer in layers)
             {
-                Matrix<double> outputFromThisLayer = (inputToNextLayer * layer.SynapticWeights).Map(o => this.Sigmoid(o));
+                // Modify for bias
+                Matrix<double> weights = layer.SynapticWeights;
+                //for (int colCount = 0; colCount < weights.ColumnCount; colCount++)
+                //{
+                //    weights[weights.RowCount - 1, colCount] *= Parameters.Bias;
+                //}
+
+                Matrix<double> outputFromThisLayer = (inputToNextLayer * weights).Map(o => this.Sigmoid(o, Parameters.ActivationResponse));
                 orderedOutputs.Add(outputFromThisLayer);
                 inputToNextLayer = outputFromThisLayer;
             }
         }
 
+        public void Think(Matrix<double> input, out List<Matrix<double>> orderedOutputs)
+        {
+            //input = input.InsertColumn(input.ColumnCount, Vector<double>.Build.Dense(input.RowCount, 1));
+
+            Think(input, mLayers, out orderedOutputs);
+        }
+
         public void Think(Vector<double> input, out List<Matrix<double>> orderedOutputs)
         {
-            this.Think(input.ToRowMatrix(), out orderedOutputs);
+            Matrix<double> matrixInput = input.ToRowMatrix();
+            //matrixInput = matrixInput.InsertColumn(matrixInput.ColumnCount, Vector<double>.Build.Dense(matrixInput.RowCount, 1));
+
+            this.Think(matrixInput, out orderedOutputs);
         }
+    }
+
+    public static class Parameters
+    {
+        public static int Bias = -1;
+        public static int ActivationResponse = 1;
     }
 }

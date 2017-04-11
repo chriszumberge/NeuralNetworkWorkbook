@@ -23,11 +23,14 @@ namespace NeuralNetwork
 
         public NeuronLayer(Random random, int numberOfNeurons, int numberOfInputsPerNeuron)
         {
+            
             mNumberOfNeurons = numberOfNeurons;
-            mNumberOfInputsPerNeuron = numberOfNeurons;
+
+            // one additional weight for the bias
+            //mNumberOfInputsPerNeuron = numberOfInputsPerNeuron + 1;
             mNumberOfInputsPerNeuron = numberOfInputsPerNeuron;
 
-            synaptic_weights = Matrix<double>.Build.Dense(numberOfInputsPerNeuron,
+            synaptic_weights = Matrix<double>.Build.Dense(mNumberOfInputsPerNeuron,
                 numberOfNeurons, (int arg1, int arg2) => (random.NextDouble() * 2) - 1);
         }
     }

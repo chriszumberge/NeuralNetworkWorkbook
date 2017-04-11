@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NeuralNetwork.Examples;
 using NeuralNetwork.Training;
+using System.Collections;
 
 namespace NeuralNetwork.Demo
 {
@@ -23,16 +24,17 @@ namespace NeuralNetwork.Demo
     {
         public static void Main(string[] args)
         {
-            RunSimpleNeuralNetwork();
+            //RunSimpleNeuralNetwork();
             //RunLayeredNeuralNetwork();
-            //RunOONeuralNetwork();
+            //RunSimpleOONeuralNetwork();
+            RunOONeuralNetwork();
             //RunOONeuralNetworkTrainingDiagnostics();
             //PlayRockPaperScizzors();
         }
 
         private static void PlayRockPaperScizzors()
         {
-            NeuralNetwork nn = new NeuralNetwork(new Random(), 6, 1, 8, 4);
+            NeuralNetwork nn = new NeuralNetwork(new Random(), 6, 8, 4, 1);
 
             // Rock , Paper, Scizzors
             //double[,] trainin_set_input = new double[6, 6];
@@ -59,10 +61,53 @@ namespace NeuralNetwork.Demo
             // Rock vs Paper- should be 0
             Matrix<double> newInput = Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 0, 0, 0, 1, 0 } });
             nn.Think(newInput, out outputs);
+            Console.WriteLine("Rock vs Paper- should be 0");
             Console.WriteLine(outputs.Last());
             // Rock vs Scizzors- should be 1
             newInput = Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 0, 0, 0, 0, 1 } });
             nn.Think(newInput, out outputs);
+            Console.WriteLine("Rock vs Scizzors- should be 1");
+            Console.WriteLine(outputs.Last());
+
+            Console.ReadLine();
+        }
+
+        private static void RunSimpleOONeuralNetwork()
+        {
+            NeuralNetwork nn = new NeuralNetwork(new Random(), 3, 1);
+            double[,] training_set_input_array = new double[,]
+            {
+                {0, 0, 1 },
+                {1, 1, 1 },
+                {1, 0, 1 },
+                {0, 1, 1 }
+            };
+            Matrix<double> training_set_inputs = Matrix<double>.Build.DenseOfArray(training_set_input_array);
+
+            double[,] training_set_output_array = new double[,]
+            {
+                { 0 }, { 1 }, { 1 }, { 0 }
+            };
+            Matrix<double> training_set_outputs = Matrix<double>.Build.DenseOfArray(training_set_output_array);
+
+            nn.Train(training_set_inputs, training_set_outputs, 100000);
+
+            Matrix<double> newInput;
+            List<Matrix<double>> outputs = new List<Matrix<double>>();
+
+            newInput = Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 0, 0} });
+            nn.Think(newInput, out outputs);
+            Console.WriteLine("Considering new situation [1, 0, 0]");
+            Console.WriteLine(outputs.Last());
+
+            newInput = Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 1, 0} });
+            nn.Think(newInput, out outputs);
+            Console.WriteLine("Considering new situation [1, 1, 0]");
+            Console.WriteLine(outputs.Last());
+
+            newInput = Matrix<double>.Build.DenseOfArray(new double[,] { { 0, 1, 0 } });
+            nn.Think(newInput, out outputs);
+            Console.WriteLine("Considering new situation [0, 1, 0]");
             Console.WriteLine(outputs.Last());
 
             Console.ReadLine();
@@ -70,7 +115,7 @@ namespace NeuralNetwork.Demo
 
         private static void RunOONeuralNetwork()
         {
-            NeuralNetwork nn = new NeuralNetwork(new Random(), 3, 1, 4, 2);
+            NeuralNetwork nn = new NeuralNetwork(new Random(), 3, 4, 2, 1);
 
             double[,] training_set_input_array = new double[,]
             {
@@ -93,13 +138,85 @@ namespace NeuralNetwork.Demo
 
             List<Matrix<double>> outputs = new List<Matrix<double>>();
             Matrix<double> newInput = Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 1, 0 } });
-
-
             nn.Think(newInput, out outputs);
+            Console.WriteLine("Should be 0:");
+            Console.WriteLine(outputs.Last());
+            Console.WriteLine();
 
+            newInput = Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 0, 0 } });
+            nn.Think(newInput, out outputs);
+            Console.WriteLine("Should be 1:");
+            Console.WriteLine(outputs.Last());
+
+            newInput = Matrix<double>.Build.DenseOfArray(new double[,] { { 0, 1, 0 } });
+            nn.Think(newInput, out outputs);
+            Console.WriteLine("Should be 1:");
+            Console.WriteLine(outputs.Last());
+
+            newInput = Matrix<double>.Build.DenseOfArray(new double[,] { { 0, 0, 1 } });
+            nn.Think(newInput, out outputs);
+            Console.WriteLine("Should be 0:");
+            Console.WriteLine(outputs.Last());
+
+            newInput = Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 1, 0 } });
+            nn.Think(newInput, out outputs);
+            Console.WriteLine("Should be 0:");
+            Console.WriteLine(outputs.Last());
+
+            newInput = Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 0, 1 } });
+            nn.Think(newInput, out outputs);
+            Console.WriteLine("Should be 1:");
+            Console.WriteLine(outputs.Last());
+
+            newInput = Matrix<double>.Build.DenseOfArray(new double[,] { { 0, 1, 1 } });
+            nn.Think(newInput, out outputs);
+            Console.WriteLine("Should be 1:");
+            Console.WriteLine(outputs.Last());
+
+            newInput = Matrix<double>.Build.DenseOfArray(new double[,] { { 1, 1, 1 } });
+            nn.Think(newInput, out outputs);
+            Console.WriteLine("Should be 0:");
             Console.WriteLine(outputs.Last());
 
             Console.ReadLine();
+        }
+
+        private static Matrix<double> CreateMathInputMatrixFromInts(int v1, int v2)
+        {
+            double[,] matrix_seed_array = new double[1, 64];
+
+            double[] in1Array = GetBitArrayAsDoulbesFromValue(v1);
+            double[] in2Array = GetBitArrayAsDoulbesFromValue(v2);
+
+            double[] allInputs = in1Array.Concat(in2Array).ToArray();
+
+            for (int j = 0; j < allInputs.Length; j++)
+            {
+                matrix_seed_array[0, j] = allInputs[j];
+            }
+
+            return Matrix<double>.Build.DenseOfArray(matrix_seed_array);
+        }
+
+        private static byte[] GetBitArrayAsBytesFromValue(int value)
+        {
+            bool[] bits = GetBitArrayAsBoolFromValue(value);
+            byte[] bitValues = bits.Select(bit => (byte)(bit ? 1 : 0)).ToArray();
+            return bitValues;
+        }
+
+        private static double[] GetBitArrayAsDoulbesFromValue(int value)
+        {
+            return GetBitArrayAsBoolFromValue(value).Select(bit => (double)(bit ? 1.0 : 0.0)).ToArray();
+        }
+
+        private static bool[] GetBitArrayAsBoolFromValue(int value)
+        {
+            BitArray bitArray = new BitArray(new int[] { value });
+            bool[] bits = new bool[bitArray.Count];
+            bitArray.CopyTo(bits, 0);
+            Array.Reverse(bits);
+            return bits;
         }
 
         private static void RunOONeuralNetworkTrainingDiagnostics()
@@ -127,11 +244,11 @@ namespace NeuralNetwork.Demo
             Random random = new Random();
             NeuralNetwork nn1 = new NeuralNetwork(random, 3, 1);
             NeuralNetwork nn2 = new NeuralNetwork(random, 3, 1, 1);
-            NeuralNetwork nn3 = new NeuralNetwork(random, 3, 1, 2);
-            NeuralNetwork nn4 = new NeuralNetwork(random, 3, 1, 3);
-            NeuralNetwork nn5 = new NeuralNetwork(random, 3, 1, 4, 1);
-            NeuralNetwork nn6 = new NeuralNetwork(random, 3, 1, 4, 2);
-            NeuralNetwork nn7 = new NeuralNetwork(random, 3, 1, 4, 3);
+            NeuralNetwork nn3 = new NeuralNetwork(random, 3, 2, 1);
+            NeuralNetwork nn4 = new NeuralNetwork(random, 3, 3, 1);
+            NeuralNetwork nn5 = new NeuralNetwork(random, 3, 4, 1, 1);
+            NeuralNetwork nn6 = new NeuralNetwork(random, 3, 4, 2, 1);
+            NeuralNetwork nn7 = new NeuralNetwork(random, 3, 4, 3, 1);
 
             int numTrainingIterations = 100000;
 
@@ -176,7 +293,9 @@ namespace NeuralNetwork.Demo
                 {
                     variation1[0] += 1;
                 }
-                NeuralNetwork topVar1 = new NeuralNetwork(random, 3, 1, variation1.ToArray());
+                // add output layer
+                variation1.Add(1);
+                NeuralNetwork topVar1 = new NeuralNetwork(random, 3, variation1.ToArray());
                 variationSets.Add(new TrainingSet(topVar1, training_set_inputs, training_set_outputs, numTrainingIterations));
 
                 List<int> variation2 = topPerformingHiddenLayers.Select(x => x.NumberOfNeurons).ToList();
@@ -184,7 +303,9 @@ namespace NeuralNetwork.Demo
                 {
                     variation2[0] -= 1;
                 }
-                NeuralNetwork topVar2 = new NeuralNetwork(random, 3, 1, variation2.ToArray());
+                // add output layer
+                variation2.Add(1);
+                NeuralNetwork topVar2 = new NeuralNetwork(random, 3, variation2.ToArray());
                 variationSets.Add(new TrainingSet(topVar2, training_set_inputs, training_set_outputs, numTrainingIterations));
             }
 
@@ -195,7 +316,9 @@ namespace NeuralNetwork.Demo
                 {
                     List<int> variation = topPerformingHiddenLayers.Select(x => x.NumberOfNeurons).ToList();
                     variation.Add(i);
-                    NeuralNetwork varNN = new NeuralNetwork(random, 3, 1, variation.ToArray());
+                    // Add output layer
+                    variation.Add(1);
+                    NeuralNetwork varNN = new NeuralNetwork(random, 3, variation.ToArray());
                     variationSets.Add(new TrainingSet(varNN, training_set_inputs, training_set_outputs, numTrainingIterations));
                 }
             }
