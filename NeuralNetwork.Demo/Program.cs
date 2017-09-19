@@ -25,10 +25,13 @@ namespace NeuralNetwork.Demo
         public static void Main(string[] args)
         {
             //RunSimpleNeuralNetwork();
-            //RunLayeredNeuralNetwork();
             //RunSimpleOONeuralNetwork();
-            RunOONeuralNetwork();
-            //RunOONeuralNetworkTrainingDiagnostics();
+
+            //RunLayeredNeuralNetwork();
+            //RunOONeuralNetwork();
+
+            RunOONeuralNetworkTrainingDiagnostics();
+
             //PlayRockPaperScizzors();
         }
 

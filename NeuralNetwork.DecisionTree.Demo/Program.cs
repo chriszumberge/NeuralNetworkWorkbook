@@ -20,7 +20,7 @@ namespace NeuralNetwork.DecisionTree.Demo
 
         private static void RunFishDecisionAnalysis()
         {
-            var fishSet = GetFishDataSet();
+            DecisionTreeSet fishSet = GetFishDataSet();
 
             Tree tree = fishSet.BuildTree();
 
@@ -42,7 +42,7 @@ namespace NeuralNetwork.DecisionTree.Demo
 
         private static void RunBatmanDecisionAnalysis()
         {
-            var heroSet = GetHeroDataSet();
+            DecisionTreeSet heroSet = GetHeroDataSet();
             Tree tree = heroSet.BuildTree();
             Console.WriteLine(tree.DisplayTree());
 

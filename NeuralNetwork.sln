@@ -16,6 +16,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNetwork.DecisionTree"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNetwork.DecisionTree.Demo", "NeuralNetwork.DecisionTree.Demo\NeuralNetwork.DecisionTree.Demo.csproj", "{BCA9524B-B0BB-4F29-8623-6F1F12E33B6E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNetwork.ImageRecognition", "NeuralNetwork.ImageRecognition\NeuralNetwork.ImageRecognition.csproj", "{47F18AEC-69D2-454A-A0FF-FBCDAAD8E8B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNetwork.ImageRecognition.Demo", "NeuralNetwork.ImageRecognition.Demo\NeuralNetwork.ImageRecognition.Demo.csproj", "{D5FA738E-DE53-455E-B739-13D49FC74F82}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNetwork.ImageRecognition.CodeProject", "NeuralNetwork.ImageRecognition.CodeProject\NeuralNetwork.ImageRecognition.CodeProject.csproj", "{85E91C38-4A1B-4ACB-A327-B4F6EA4E7AD3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +56,18 @@ Global
 		{BCA9524B-B0BB-4F29-8623-6F1F12E33B6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCA9524B-B0BB-4F29-8623-6F1F12E33B6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BCA9524B-B0BB-4F29-8623-6F1F12E33B6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47F18AEC-69D2-454A-A0FF-FBCDAAD8E8B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47F18AEC-69D2-454A-A0FF-FBCDAAD8E8B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47F18AEC-69D2-454A-A0FF-FBCDAAD8E8B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47F18AEC-69D2-454A-A0FF-FBCDAAD8E8B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5FA738E-DE53-455E-B739-13D49FC74F82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5FA738E-DE53-455E-B739-13D49FC74F82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5FA738E-DE53-455E-B739-13D49FC74F82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5FA738E-DE53-455E-B739-13D49FC74F82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85E91C38-4A1B-4ACB-A327-B4F6EA4E7AD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85E91C38-4A1B-4ACB-A327-B4F6EA4E7AD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85E91C38-4A1B-4ACB-A327-B4F6EA4E7AD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85E91C38-4A1B-4ACB-A327-B4F6EA4E7AD3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
